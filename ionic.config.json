@@ -1,0 +1,7 @@
+{
+  "name": "sortingAlgorithms",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
