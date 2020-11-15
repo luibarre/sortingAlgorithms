@@ -1,19 +1,37 @@
-import { Component } from "@angular/core";
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  OnInit,
+  QueryList,
+  Renderer2,
+  ViewChild,
+  ViewChildren,
+} from "@angular/core";
 import { FormControl, FormGroup, Validators } from "@angular/forms";
 import { ActivatedRoute } from "@angular/router";
-import { AlertController, PickerController, Platform } from "@ionic/angular";
+import {
+  AlertController,
+  IonCol,
+  PickerController,
+  Platform,
+} from "@ionic/angular";
 
 @Component({
   selector: "app-home",
   templateUrl: "home.page.html",
   styleUrls: ["home.page.scss"],
 })
-export class HomePage {
-  public folder: string;
+export class HomePage implements OnInit {
+  @ViewChildren(IonCol, { read: ElementRef }) cols: QueryList<ElementRef>;
+
   public isMD = this.platform.is("android");
+  public isFD = this.platform.is("ios");
 
   formForElements: FormGroup;
   elements: any[] = [];
+  bkpElements: any[] = [];
+
   final: number[] = [];
 
   defArrLenOpts: { text: string; value: number }[]; // add this variable, assign initial value before creating picker
@@ -25,9 +43,9 @@ export class HomePage {
     private activatedRoute: ActivatedRoute,
     private pickerCtrl: PickerController,
     private platform: Platform,
-    public alertController: AlertController
+    public alertController: AlertController,
+    private cd: ChangeDetectorRef
   ) {
-    // assign initial value here in constructor or inside ngOnInit hook:
     this.defArrLenOpts = this.initLenOpts(5, 8);
 
     this.selectedLengthOpt = this.defaultLengthOpt;
@@ -47,13 +65,16 @@ export class HomePage {
     let newNonNumElem: number[] = [];
     const oldElements = this.elements;
     let newElements: number[];
+    this.elements = [];
     if (!newRawElement) {
+      //No input
       newElements = this.randomNums(
         this.min,
         this.max,
         +this.selectedLengthOpt
       );
       this.elements = newElements;
+      this.bkpElements = this.elements.slice();
     } else {
       newNonNumElem = this.removeNonNum(newRawElement);
       newElements = this.removeDup(newNonNumElem);
@@ -64,15 +85,22 @@ export class HomePage {
           this.defArrLenOpts[this.defArrLenOpts.length - 1].value
       ) {
         this.presentAlert({
-          header: "Alert",
-          subHeader: "subHeader",
-          message: "Please enter 5 to 12 positive integers between 0 and 999.",
+          header: "Warning",
+          subHeader: "",
+          message:
+            '<ion-icon name="warning"></ion-icon> Please enter ' +
+            this.defArrLenOpts[0].value +
+            " to " +
+            (this.defArrLenOpts.length - 1 + this.defArrLenOpts[0].value) +
+            " positive integers between 0 and 999.",
           buttons: ["OK"],
         });
       } else {
-        this.elements = newElements;
+        this.elements = newElements.slice();
+        this.bkpElements = this.elements.slice();
       }
     }
+    this.cd.detectChanges();
 
     this.formForElements.reset();
   }
@@ -84,12 +112,20 @@ export class HomePage {
 
   removeNonNum(arr) {
     const regexp = new RegExp("[^0-9]");
-    let result: number[] = [];
+    let result: any[] = [];
     result = arr.split(regexp).filter((e) => {
       return e.length > 0 && !isNaN(+e) && e[0] != 0;
     });
-
-    return result;
+    console.log("result: ", result);
+    if (
+      result.length >= this.defArrLenOpts[0].value &&
+      result.length <= this.defArrLenOpts[this.defArrLenOpts.length - 1].value
+    ) {
+      this.selectedLengthOpt = result.length;
+    }
+    return result.map((x) => {
+      return parseInt(x, 10);
+    });
   }
 
   removeDup(arr) {
@@ -162,11 +198,37 @@ export class HomePage {
     await alert.present();
   }
 
+  onBeginning() {
+    this.elements = this.bkpElements.slice();
+  }
+  onBack() {}
+  onForward() {}
+  onEnd() {
+    this.elements = this.bubbleSort(this.elements, true);
+  }
+
+  bubbleSort(array: number[], skip: boolean): number[] {
+    array = array.slice(); // creates a copy of the array
+    console.log("array: ", array);
+    for (let i = 0; i < array.length; i++) {
+      for (let j = 0; j < array.length - 1; j++) {
+        if (array[j] > array[j + 1]) {
+          let swap = array[j];
+          array[j] = array[j + 1];
+          array[j + 1] = swap;
+        }
+      }
+    }
+    return array;
+  }
+
   ngOnInit() {
-    this.folder = this.activatedRoute.snapshot.paramMap.get("id");
     this.initForm();
   }
 
+  ngOnChanges() {
+    console.log("ngOnChanges");
+  }
   ngOnDestroy() {}
 
   ionViewWillEnter() {}
@@ -181,7 +243,10 @@ export class HomePage {
     this.formForElements = new FormGroup({
       inputNumber: new FormControl(
         null,
-        Validators.compose([Validators.minLength(this.selectedLengthOpt), Validators.maxLength(200)])
+        Validators.compose([
+          Validators.minLength(this.selectedLengthOpt),
+          Validators.maxLength(200),
+        ])
       ),
     });
   }

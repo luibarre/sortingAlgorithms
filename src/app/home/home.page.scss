@@ -25,3 +25,19 @@
 #container a {
   text-decoration: none;
 }
+
+.arrayValues {
+  border-bottom: solid 0.2em red;
+  padding: 1em;
+  border-top: solid 0.2em red;
+  padding: 1em;
+  border-left: solid 0.1em red;
+  border-right: solid 0.1em red;
+}
+
+#array > ion-col:first-of-type .arrayValues {
+  border-left: solid 0.4em red;
+}
+#array > ion-col:last-of-type .arrayValues {
+  border-right: solid 0.4em red;
+}

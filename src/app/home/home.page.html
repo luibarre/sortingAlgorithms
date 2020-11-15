@@ -1,16 +1,7 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-menu-button></ion-menu-button>
-    </ion-buttons>
-    <ion-title>{{ folder }}</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
+  <ion-header collapse="false" [translucent]="true">
     <ion-toolbar>
-      <ion-title size="large">{{ folder }}</ion-title>
+      <ion-title size="large">Sorting Algorithms</ion-title>
     </ion-toolbar>
   </ion-header>
 
@@ -42,7 +33,7 @@
           </ion-button>
         </ion-col>
         <ion-col size="auto">
-          <ion-item *ngIf="isMD">
+          <ion-item *ngIf="isMD || isFD">
             <ion-label position="fixed">Length</ion-label>
             <ion-button
               (click)="openPicker()"
@@ -56,8 +47,8 @@
             </ion-button>
           </ion-item>
 
-          <ion-item *ngIf="!isMD">
-            <span>Select</span>
+          <ion-item *ngIf="!isMD && !isFD">
+            <span>Array Length</span>
             <ion-select
               slot="end"
               [value]="selectedLengthOpt"
@@ -73,14 +64,13 @@
                 >{{option.text}}
               </ion-select-option>
             </ion-select>
-            <!-- <ion-icon slot="end" name="caret-down-outline"></ion-icon> -->
           </ion-item>
         </ion-col>
       </ion-row>
       <ion-row>
         <ion-col size="12">
           <ion-item>
-            <ion-label position="floating">Array</ion-label>
+            <ion-label position="floating">Array Length</ion-label>
             <ion-input
               type="text"
               id="inputNumber"
@@ -98,21 +88,48 @@
           align-items: center;
           justify-content: center;
         "
+        *ngIf="elements.length > 0"
+      >
+        <ion-col size="2">
+          <ion-button fill="clear" (click)="onBeginning()">
+            <ion-icon slot="icon-only" name="caret-back-circle"></ion-icon>
+          </ion-button>
+        </ion-col>
+        <ion-col size="2">
+          <ion-button fill="clear" (click)="onBack()">
+            <ion-icon slot="icon-only" name="play-back-circle"></ion-icon>
+          </ion-button>
+        </ion-col>
+        <ion-col size="2">
+          <ion-button fill="clear" (click)="onForward()">
+            <ion-icon slot="icon-only" name="play-forward-circle"></ion-icon>
+          </ion-button>
+        </ion-col>
+        <ion-col size="2">
+          <ion-button fill="clear" (click)="onEnd()">
+            <ion-icon slot="icon-only" name="caret-forward-circle"></ion-icon>
+          </ion-button>
+        </ion-col>
+      </ion-row>
+    </ion-grid>
+    <ion-grid>
+      <ion-row
+        class="ion-wrap"
+        style="text-align: center; align-items: center; justify-content: center"
+        id="array"
       >
         <ion-col
           size="auto"
           *ngFor="let elem of elements; index as i"
-          class="ion-align-self-center"
-          style="flex-grow: 1"
+          id="num+"
+          class="ion-align-self-center ion-no-padding"
         >
-          <ion-grid>
+          <ion-grid class="ion-no-padding">
             <ion-row>
-              <ion-col size="12">
-                <div style="border: solid 0.1em red; padding: 1em">
-                  <ion-label>{{elements[i]}}</ion-label>
-                </div>
+              <ion-col size="12" id="array[{{i}}]" class="arrayValues">
+                <ion-label>{{elements[i]}}</ion-label>
               </ion-col>
-              <ion-col size="12">
+              <ion-col size="12" id="arrayIndex">
                 <ion-label style="opacity: 0.8; padding-top: 5px"
                   >{{i}}</ion-label
                 >
